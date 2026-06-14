@@ -14,18 +14,22 @@ namespace VoxelGame.Core
         private Entity gridEntity;
         private EntityManager entityManager;
 
+        private NativeArray<GridBlock> _blocksArray;
+
         private void Start()
         {
             entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
             
             gridEntity = entityManager.CreateEntity(typeof(WorldGridComponent));
             
+            _blocksArray = new NativeArray<GridBlock>(width * height * depth, Allocator.Persistent);
+            
             var gridComponent = new WorldGridComponent
             {
                 Width = width,
                 Height = height,
                 Depth = depth,
-                Blocks = new NativeArray<GridBlock>(width * height * depth, Allocator.Persistent)
+                Blocks = _blocksArray
             };
 
             entityManager.SetComponentData(gridEntity, gridComponent);
@@ -33,13 +37,9 @@ namespace VoxelGame.Core
 
         private void OnDestroy()
         {
-            if (entityManager != default && entityManager.Exists(gridEntity))
+            if (_blocksArray.IsCreated)
             {
-                var gridComponent = entityManager.GetComponentData<WorldGridComponent>(gridEntity);
-                if (gridComponent.Blocks.IsCreated)
-                {
-                    gridComponent.Blocks.Dispose();
-                }
+                _blocksArray.Dispose();
             }
         }
 
