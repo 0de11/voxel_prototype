@@ -16,13 +16,13 @@ namespace VoxelGame.Player
             if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) moveX = 1;
             else if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) moveX = -1;
 
-            bool castSpell = Input.GetKeyDown(KeyCode.Space);
+            bool isCasting = Input.GetKey(KeyCode.Space);
 
             foreach (var input in SystemAPI.Query<RefRW<PlayerInputComponent>>())
             {
                 input.ValueRW.MoveX = moveX;
                 input.ValueRW.MoveZ = moveZ;
-                input.ValueRW.CastSpell = castSpell;
+                input.ValueRW.IsCasting = isCasting;
             }
         }
     }

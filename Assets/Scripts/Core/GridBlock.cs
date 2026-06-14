@@ -1,21 +1,19 @@
 using System;
+using Unity.Entities;
 
 namespace VoxelGame.Core
 {
     public enum BlockType : byte
     {
-        Air = 0,
-        Stone = 1,
-        InteractiveCube = 2,
-        Switch = 3,
-        Player = 4
+        Player = 0,
+        Air = 1,
+        Stone = 2
     }
 
     public enum GravityState : byte
     {
         Stable = 0,
-        Floating = 1,
-        Falling = 2
+        Levitating = 1
     }
 
     [Serializable]
@@ -24,5 +22,6 @@ namespace VoxelGame.Core
         public BlockType Type;
         public GravityState Gravity;
         public bool IsSolid;
+        public Entity VisualEntity;
     }
 }

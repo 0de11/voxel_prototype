@@ -81,6 +81,9 @@ namespace VoxelGame.Rendering
                             });
 
                             EntityManager.SetComponentData(visualEntity, LocalTransform.FromPosition(new float3(x, y, z)));
+                            
+                            block.VisualEntity = visualEntity;
+                            blocks[index] = block;
                         }
                     }
                 }

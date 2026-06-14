@@ -30,6 +30,8 @@ namespace VoxelGame.Player
                     continue; 
                 }
 
+                if (input.ValueRO.IsCasting) continue;
+
                 int dx = input.ValueRO.MoveX;
                 int dz = input.ValueRO.MoveZ;
 

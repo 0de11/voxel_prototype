@@ -6,6 +6,6 @@ namespace VoxelGame.Player
     {
         public int MoveX;
         public int MoveZ;
-        public bool CastSpell;
+        public bool IsCasting;
     }
 }

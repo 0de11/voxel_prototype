@@ -17,5 +17,9 @@ namespace VoxelGame.Player
         public int LogicalZ;
         public FacingDirection Facing;
         public float MoveTimer; // To prevent moving every single frame
+        
+        public bool IsDecreasingGravity;
+        public int LiftedX;
+        public int LiftedZ;
     }
 }

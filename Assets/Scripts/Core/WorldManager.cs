@@ -23,6 +23,10 @@ namespace VoxelGame.Core
             gridEntity = entityManager.CreateEntity(typeof(WorldGridComponent));
             
             _blocksArray = new NativeArray<GridBlock>(width * height * depth, Allocator.Persistent);
+            for (int i = 0; i < _blocksArray.Length; i++)
+            {
+                _blocksArray[i] = new GridBlock { Type = BlockType.Air };
+            }
             
             var gridComponent = new WorldGridComponent
             {

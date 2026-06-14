@@ -1,9 +1,12 @@
 using Unity.Entities;
 using Unity.Burst;
+using Unity.Mathematics;
 using VoxelGame.Core;
+using VoxelGame.Rendering;
 
 namespace VoxelGame.Systems
 {
+    // Keeping this for compatibility if anything references it, but we no longer use it
     public struct GravitySpellCommand : IComponentData
     {
         public int TargetX;
@@ -26,50 +29,41 @@ namespace VoxelGame.Systems
             var gridEntity = SystemAPI.GetSingletonEntity<WorldGridComponent>();
             var grid = SystemAPI.GetComponent<WorldGridComponent>(gridEntity);
 
-            foreach (var (spell, entity) in SystemAPI.Query<RefRO<GravitySpellCommand>>().WithEntityAccess())
-            {
-                int index = grid.GetIndex(spell.ValueRO.TargetX, spell.ValueRO.TargetY, spell.ValueRO.TargetZ);
-                if (index >= 0 && index < grid.Blocks.Length)
-                {
-                    var block = grid.Blocks[index];
-                    block.Gravity = GravityState.Floating;
-                    grid.Blocks[index] = block;
-                }
-                
-                state.EntityManager.DestroyEntity(entity);
-            }
-
+            // Downward Gravity Processing (Bottom-Up to allow cascading falls)
             for (int z = 0; z < grid.Depth; z++)
             {
-                for (int y = grid.Height - 1; y >= 0; y--)
+                for (int y = 1; y < grid.Height; y++)
                 {
                     for (int x = 0; x < grid.Width; x++)
                     {
                         int index = grid.GetIndex(x, y, z);
                         var block = grid.Blocks[index];
 
-                        if (block.Gravity == GravityState.Floating)
+                        if (block.Type != BlockType.Air && block.Gravity == GravityState.Stable)
                         {
-                            if (y + 1 < grid.Height)
-                            {
-                                int aboveIndex = grid.GetIndex(x, y + 1, z);
-                                var aboveBlock = grid.Blocks[aboveIndex];
+                            int belowIndex = grid.GetIndex(x, y - 1, z);
+                            var belowBlock = grid.Blocks[belowIndex];
 
-                                if (aboveBlock.Type == BlockType.Air)
-                                {
-                                    grid.Blocks[aboveIndex] = block;
-                                    grid.Blocks[index] = aboveBlock;
-                                }
-                                else
-                                {
-                                    block.Gravity = GravityState.Stable;
-                                    grid.Blocks[index] = block;
-                                }
-                            }
-                            else
+                            if (belowBlock.Type == BlockType.Air)
                             {
-                                block.Gravity = GravityState.Stable;
-                                grid.Blocks[index] = block;
+                                // Swap
+                                grid.Blocks[belowIndex] = block;
+                                grid.Blocks[index] = belowBlock; // Air
+
+                                // Update Visuals
+                                if (block.VisualEntity != Entity.Null && SystemAPI.HasComponent<VisualBlockComponent>(block.VisualEntity))
+                                {
+                                    var visual = SystemAPI.GetComponent<VisualBlockComponent>(block.VisualEntity);
+                                    visual.TargetPosition = new float3(x, y - 1, z);
+                                    SystemAPI.SetComponent(block.VisualEntity, visual);
+                                }
+                                
+                                if (belowBlock.VisualEntity != Entity.Null && SystemAPI.HasComponent<VisualBlockComponent>(belowBlock.VisualEntity))
+                                {
+                                    var visual = SystemAPI.GetComponent<VisualBlockComponent>(belowBlock.VisualEntity);
+                                    visual.TargetPosition = new float3(x, y, z);
+                                    SystemAPI.SetComponent(belowBlock.VisualEntity, visual);
+                                }
                             }
                         }
                     }
